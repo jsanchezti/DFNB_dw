@@ -93,7 +93,7 @@ SELECT v.*
   FROM dbo.v_denorm_acct_cust_rel_prod_branch_region as v;
 
 
--- Q1: Which Accounts, Customers, Relationships, Products, and Branches generate the most value for the organization?
+-- Q1: Which Accounts, Customers, Relationships, Products, or Branches generate the most value for the organization?
 
 -- Account
 
@@ -104,7 +104,7 @@ ORDER BY v.combined_value_rank;
 -- Customer
 -- Relationship
 -- Product
--- Branche
+-- Branch
 
 
 -- Q2: What is the next most likely product for each Customer?
