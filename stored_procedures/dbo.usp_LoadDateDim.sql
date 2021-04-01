@@ -120,35 +120,78 @@ SELECT CONVERT(VARCHAR, (@v_first_date + n.n), 112) AS date_id
      , CONVERT(VARCHAR, DATEADD(dd, -(DATEPART(dw, (@v_first_date + n.n)) - 1), (@v_first_date + n.n)), 112) AS week_start_date_id
      , FORMAT(DATEADD(dd, 7 - DATEPART(dw, (@v_first_date + n.n)), (@v_first_date + n.n)), 'yyyy-MM-dd') AS week_end_date
      , CONVERT(VARCHAR, DATEADD(dd, 7 - DATEPART(dw, (@v_first_date + n.n)), (@v_first_date + n.n)), 112) AS week_end_date_id
-     , NULL AS weekday_flag
-     , NULL AS weekend_flag
-     , NULL AS last_day_in_week_flag
-     , NULL AS month_number
-     , NULL AS month_name
-     , NULL AS month_abbreviation
-     , NULL AS month_last_day_number
-     , NULL AS month_start_date
-     , NULL AS month_start_date_id
-     , NULL AS month_end_date
-     , NULL AS month_end_date_id
-     , NULL AS month_end_date_previous
-     , NULL AS month_end_date_previous_id
-     , NULL AS last_day_in_month_flag
-     , NULL AS quarter_number
-     , NULL AS quarter_name
-     , NULL AS quarter_code
-     , NULL AS quarter_start_date
-     , NULL AS quarter_start_date_id
-     , NULL AS quarter_end_date
-     , NULL AS quarter_end_date_id
-     , NULL AS last_day_in_quarter_flag
-     , NULL AS year_number
-     , NULL AS year_start_date
-     , NULL AS year_start_date_id
-     , NULL AS year_end_date
-     , NULL AS year_end_date_id
-     , NULL AS yyyymm
-     , NULL AS last_day_in_year_flag
+     , CASE DATEPART(DW, @v_first_date + n.n)
+            WHEN 1 THEN 0
+            WHEN 2 THEN 1
+            WHEN 3 THEN 1
+            WHEN 4 THEN 1
+            WHEN 5 THEN 1
+            WHEN 6 THEN 1
+            WHEN 7 THEN 0
+        END AS weekday_flag
+     , CASE DATEPART(DW, @v_first_date + n.n)
+            WHEN 1 THEN 1
+            WHEN 2 THEN 0
+            WHEN 3 THEN 0
+            WHEN 4 THEN 0
+            WHEN 5 THEN 0
+            WHEN 6 THEN 0
+            WHEN 7 THEN 1
+        END AS weekend_flag
+     ,  CASE DATEPART(DW, @v_first_date + n.n)
+            WHEN 1 THEN 0
+            WHEN 2 THEN 0
+            WHEN 3 THEN 0
+            WHEN 4 THEN 0
+            WHEN 5 THEN 0
+            WHEN 6 THEN 0
+            WHEN 7 THEN 1
+        END AS last_day_in_week_flag
+     , FORMAT((@v_first_date + n.n), 'MM') AS month_number
+     , DATENAME(month, (@v_first_date + n.n)) AS month_name
+     , FORMAT((@v_first_date + n.n), 'MMM')  AS month_abbreviation
+     , FORMAT(EOMONTH(@v_first_date + n.n),'dd') AS month_last_day_number
+     , DATEADD(DAY,1,EOMONTH(@v_first_date + n.n,-1)) AS month_start_date
+     , CAST(convert(varchar(8),DATEADD(DAY,1,EOMONTH(@v_first_date + n.n,-1)),112) as int) AS month_start_date_id
+     , EOMONTH(@v_first_date + n.n) AS month_end_date
+     , CAST(convert(varchar(8),EOMONTH(@v_first_date + n.n),112) as int) AS month_end_date_id
+     , EOMONTH(@v_first_date + n.n, -1) AS month_end_date_previous
+     , CAST(convert(varchar(8),EOMONTH(@v_first_date + n.n, -1),112) as int) AS month_end_date_previous_id
+     , CASE FORMAT((@v_first_date + n.n), 'yyyy-MM-dd')
+			WHEN EOMONTH(@v_first_date + n.n) THEN 1 
+			ELSE 0
+	   END AS last_day_in_month_flag
+     , DATEPART(Quarter, @v_first_date + n.n) AS quarter_number
+     , CASE DATEPART(QQ, @v_first_date + n.n)
+            WHEN 1 THEN 'First'
+            WHEN 2 THEN 'Second'
+            WHEN 3 THEN 'Third'
+            WHEN 4 THEN 'Fourth'
+        END  AS quarter_name
+     ,  CASE DATEPART(QQ, @v_first_date + n.n)
+            WHEN 1 THEN 'Q1'
+            WHEN 2 THEN 'Q2'
+            WHEN 3 THEN 'Q3'
+            WHEN 4 THEN 'Q4'
+        END  AS quarter_code
+     , FORMAT(DATEADD(q, DATEDIFF(q, 0, @v_first_date + n.n), 0),'yyyy-MM-dd') AS quarter_start_date
+     , CAST(convert(varchar(8),DATEADD(q, DATEDIFF(q, 0, @v_first_date + n.n), 0),112) as int) AS quarter_start_date_id
+     , FORMAT(DATEADD(d, -1, DATEADD(q, DATEDIFF(q, 0, @v_first_date + n.n) + 1, 0)),'yyyy-MM-dd') AS quarter_end_date
+     , CAST(convert(varchar(8),DATEADD(d, -1, DATEADD(q, DATEDIFF(q, 0, @v_first_date + n.n) + 1, 0)),112) as int) AS quarter_end_date_id
+     , CASE FORMAT(DATEADD(d, -1, DATEADD(q, DATEDIFF(q, 0, @v_first_date + n.n) + 1, 0)),'yyyy-MM-dd')
+			WHEN FORMAT((@v_first_date + n.n), 'yyyy-MM-dd') THEN 1 
+			ELSE 0
+	   END AS last_day_in_quarter_flag
+     , DATEPART(yyyy,@v_first_date + n.n) AS year_number
+     , FORMAT(DATEADD(yy, DATEDIFF(yy, 0, @v_first_date + n.n), 0),'yyyy-MM-dd') AS year_start_date
+     , CAST(convert(varchar(8),DATEADD(yy, DATEDIFF(yy, 0, @v_first_date + n.n), 0),112) as int) AS year_start_date_id
+     , FORMAT(DATEADD (dd, -1, DATEADD(yy, DATEDIFF(yy, 0, @v_first_date + n.n) +1, 0)),'yyyy-MM-dd') AS year_end_date
+     , CAST(convert(varchar(8),DATEADD (dd, -1, DATEADD(yy, DATEDIFF(yy, 0, @v_first_date + n.n) +1, 0)),112) as int) AS year_end_date_id
+     , CAST(CONCAT(DATEPART(yyyy,@v_first_date + n.n), DATEPART(mm,@v_first_date + n.n)) AS INT) AS yyyymm 
+     , CASE FORMAT(DATEADD (dd, -1, DATEADD(yy, DATEDIFF(yy, 0, @v_first_date + n.n) +1, 0)),'yyyy-MM-dd')
+			WHEN FORMAT((@v_first_date + n.n), 'yyyy-MM-dd') THEN 1 
+			ELSE 0
+	   END AS last_day_in_year_flag
      , NULL AS holiday_ind -- Challenge field
      , NULL AS holiday_name -- Challenge field
   FROM dbo.Nums AS n

@@ -78,7 +78,7 @@ IF EXISTS
 
 END;
 
-
+--Aqui
 IF EXISTS
 (
     SELECT fk.*
@@ -1135,6 +1135,7 @@ END;
 
 ALTER TABLE dbo.tblCustomerDim
 ADD CONSTRAINT FK_tblCustomerDim_pri_branch_id_tblBranchDim_branch_id FOREIGN KEY(pri_branch_id) REFERENCES dbo.tblBranchDim(branch_id);
+
 
 
 IF EXISTS
