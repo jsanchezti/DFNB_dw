@@ -196,6 +196,8 @@ SELECT CONVERT(VARCHAR, (@v_first_date + n.n), 112) AS date_id
      , NULL AS holiday_name -- Challenge field
   FROM dbo.Nums AS n
   --WHERE n.n <= (365 * @v_num_years)
+  --WHERE n.n <= (@v_num_days + 1)
+  --WHERE n.n <= (91675 + 1)
   WHERE n.n <= (@v_num_days + 1)
   ORDER BY 1;
 
